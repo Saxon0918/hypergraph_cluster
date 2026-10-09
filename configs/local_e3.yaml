@@ -1,0 +1,26 @@
+extends: e3_approximation.yaml
+
+sources:
+  hic:
+    IMDB_dir_genre:
+      path: data/raw/hic/IMDB/IMDB_dir_genre.txt
+      index_base: 0
+    stream_player:
+      path: data/raw/hic/STEAM/stream_player.txt
+      index_base: 0
+  scholp:
+    email_Enron:
+      directory: data/raw/email-Enron-full
+      timestamp_unit: milliseconds
+      timestamp_origin: "0001-01-01T00:00:00+00:00"
+      timestamp_origin_status: inferred_from_serial_encoding_and_reference_range
+      timezone: UTC
+      variant: full
+    congress_bills:
+      directory: data/raw/congress-bills-full
+      timestamp_unit: days
+      timestamp_origin: "0001-01-01T00:00:00+00:00"
+      timestamp_origin_status: inferred_from_serial_encoding_and_reference_range
+      timezone: UTC
+      variant: full
+

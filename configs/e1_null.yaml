@@ -1,0 +1,21 @@
+extends: base.yaml
+null_experiment:
+  datasets: [IMDB_dir_genre, stream_player]
+  scholp_datasets: [email_Enron, congress_bills]
+  sample_ids: []
+  scale_policy: fixed_size_statistic
+  models: [size_preserving, degree_size_preserving]
+  samples_per_model: 100
+  chains: 4
+  burnin_sweeps: 20
+  thinning_attempt_sweeps: 5
+  include_enron_quarters: true
+  congress_min_unique_edges: 100
+  congress_initial_num_windows: 8
+  diagnose_mixing: true
+  diagnostic_budget_multipliers: [1, 2, 4]
+  display_points: 80
+  main_test: normalized_entropy_logx_integral
+  integral_x_min: 0.01
+  integral_x_max: 10
+

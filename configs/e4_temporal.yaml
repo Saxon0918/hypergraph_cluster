@@ -1,0 +1,12 @@
+extends: base.yaml
+temporal:
+  primary_window_seconds: 600
+  sensitivity_window_seconds: [300, 1200]
+  native_contact_seconds: 20
+  interval_convention: right_closed
+  calibration_end_timestamp: null  # fill only after source time mapping is verified
+  window_origin: null
+  display_x: [0.1, 1, 10]
+  fixed_edge_count_quantile_day1: 0.2
+  fixed_edge_count_repetitions: 30
+

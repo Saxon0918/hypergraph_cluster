@@ -1,0 +1,25 @@
+{
+  "sources": [
+    {
+      "dataset": "email-Enron-full",
+      "url": "https://drive.google.com/file/d/118tda4_E7ebtTNhKj12IJ9Y71rtJ7UP6/view",
+      "filename": "email-Enron-full.download",
+      "status": "not_downloaded",
+      "note": "Google Drive confirmation-aware download may be required; verify archive type and SHA256."
+    },
+    {
+      "dataset": "congress-bills-full",
+      "url": "https://drive.google.com/file/d/1FYu5367ijQLDjyGigbf709YpbjocYxif/view",
+      "filename": "congress-bills-full.download",
+      "status": "not_downloaded",
+      "note": "Google Drive confirmation-aware download may be required; do not substitute size<=25 silently."
+    },
+    {
+      "dataset": "contact-primary-school-groups",
+      "url": "https://drive.google.com/file/d/1sBHSEIyvVKavAho524Ro4cKL66W6rn-t/view",
+      "filename": "contact-primary-school.download",
+      "status": "not_downloaded",
+      "note": "Verify ID mapping before joining class metadata."
+    }
+  ]
+}

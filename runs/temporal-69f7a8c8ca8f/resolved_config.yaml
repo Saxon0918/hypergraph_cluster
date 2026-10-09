@@ -1,0 +1,62 @@
+project: hypergraph_cluster_expansion
+dtype: float64
+seed: 11
+paths:
+  runs: runs
+preprocess:
+  binary_incidence: true
+  min_edge_size: 1
+  max_edge_size: null
+  deduplicate_within_edge: true
+  merge_duplicate_edges: true
+  preserve_declared_vertices: true
+  simplicial_closure: false
+spectrum:
+  side: auto
+  full_eigenvalues: true
+  preserve_zero_multiplicity: true
+  psd_relative_tolerance: 1.0e-10
+  memory_budget_gb: 8
+features:
+  x_log10_min: -2
+  x_log10_max: 1
+  num_scales: 12
+  scale_policy: train_median_lambda_max
+  include_U: true
+  include_normalized_entropy: true
+  include_free_energy: false
+sources:
+  hic: {}
+  scholp: {}
+  school:
+    contacts_path: data/raw/primaryschool/primaryschool.csv
+    metadata_path: data/raw/primaryschool/primaryschool_metadata.txt
+    cornell_groups_directory: data/raw/contact-primary-school
+    source_dates:
+    - 2009-10-01
+    - 2009-10-02
+output:
+  save_predictions: true
+  save_raw_curves: true
+  table_formats:
+  - csv
+  - parquet
+  figure_formats:
+  - pdf
+  - png
+  png_dpi: 300
+temporal:
+  primary_window_seconds: 600
+  sensitivity_window_seconds:
+  - 300
+  - 1200
+  native_contact_seconds: 20
+  interval_convention: right_closed
+  calibration_end_timestamp: 86400
+  window_origin: 0
+  display_x:
+  - 0.1
+  - 1
+  - 10
+  fixed_edge_count_quantile_day1: 0.2
+  fixed_edge_count_repetitions: 30

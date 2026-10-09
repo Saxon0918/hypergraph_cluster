@@ -1,0 +1,18 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+.venv/
+.idea/
+*.egg-info/
+build/
+dist/
+# The portable experiment inputs under data/raw are intentionally versioned.
+# Download archives duplicate the extracted inputs and stay local.
+data/raw/downloads/**
+data/processed/**
+!data/processed/.gitkeep
+
+# Experiment runs are intentionally versioned so a server can push results and
+# another machine can pull them. Keep transient scratch data outside runs/.
+

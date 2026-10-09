@@ -1,0 +1,19 @@
+extends: e4_temporal.yaml
+
+sources:
+  school:
+    contacts_path: data/raw/primaryschool/primaryschool.csv
+    metadata_path: data/raw/primaryschool/primaryschool_metadata.txt
+    cornell_groups_directory: data/raw/contact-primary-school
+    source_dates: [2009-10-01, 2009-10-02]
+
+temporal:
+  primary_window_seconds: 600
+  sensitivity_window_seconds: [300, 1200]
+  native_contact_seconds: 20
+  interval_convention: right_closed
+  window_origin: 0
+  calibration_end_timestamp: 86400
+  display_x: [0.1, 1, 10]
+  fixed_edge_count_quantile_day1: 0.2
+  fixed_edge_count_repetitions: 30

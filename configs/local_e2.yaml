@@ -1,0 +1,14 @@
+extends: e2_classification.yaml
+
+sources:
+  hic:
+    IMDB_dir_genre:
+      path: data/raw/hic/IMDB/IMDB_dir_genre.txt
+      index_base: 0
+    stream_player:
+      path: data/raw/hic/STEAM/stream_player.txt
+      index_base: 0
+    IMDB_dir_form:
+      path: data/raw/hic/IMDB/IMDB_dir_form.txt
+      index_base: 0
+

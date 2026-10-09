@@ -1,0 +1,14 @@
+{
+  "captured_at_utc": "2026-10-09T21:40:20.199959+00:00",
+  "python": "3.9.19 (main, Mar 21 2024, 12:08:14) \n[Clang 14.0.6 ]",
+  "platform": "macOS-10.16-x86_64-i386-64bit",
+  "machine": "x86_64",
+  "processor": "i386",
+  "numpy": "1.24.4",
+  "blas_threads": {
+    "OMP_NUM_THREADS": null,
+    "OPENBLAS_NUM_THREADS": null,
+    "MKL_NUM_THREADS": null
+  },
+  "git_commit": "HEAD"
+}

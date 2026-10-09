@@ -1,0 +1,89 @@
+project: hypergraph_cluster_expansion
+dtype: float64
+seed: 11
+paths:
+  runs: runs
+preprocess:
+  binary_incidence: true
+  min_edge_size: 1
+  max_edge_size: null
+  deduplicate_within_edge: true
+  merge_duplicate_edges: true
+  preserve_declared_vertices: true
+  simplicial_closure: false
+spectrum:
+  side: auto
+  full_eigenvalues: true
+  preserve_zero_multiplicity: true
+  psd_relative_tolerance: 1.0e-10
+  memory_budget_gb: 8
+features:
+  x_log10_min: -2
+  x_log10_max: 1
+  num_scales: 12
+  scale_policy: train_median_lambda_max
+  include_U: true
+  include_normalized_entropy: true
+  include_free_energy: false
+sources:
+  hic:
+    IMDB_dir_genre:
+      path: /Users/saxon.zhu/PycharmProjects/external/HIC/data/hypergraph/IMDB/IMDB_dir_genre.txt
+      index_base: 0
+    stream_player:
+      path: /Users/saxon.zhu/PycharmProjects/external/HIC/data/hypergraph/STEAM/stream_player.txt
+      index_base: 0
+  scholp:
+    email_Enron:
+      directory: /Users/saxon.zhu/PycharmProjects/hypergraph_cluster/data/raw/email-Enron-full
+      timestamp_unit: milliseconds
+      timestamp_origin: '0001-01-01T00:00:00+00:00'
+      timestamp_origin_status: inferred_from_serial_encoding_and_reference_range
+      timezone: UTC
+      variant: full
+    congress_bills:
+      directory: /Users/saxon.zhu/PycharmProjects/hypergraph_cluster/data/raw/congress-bills-full
+      timestamp_unit: days
+      timestamp_origin: '0001-01-01T00:00:00+00:00'
+      timestamp_origin_status: inferred_from_serial_encoding_and_reference_range
+      timezone: UTC
+      variant: full
+  school: {}
+output:
+  save_predictions: true
+  save_raw_curves: true
+  table_formats:
+  - csv
+  - parquet
+  figure_formats:
+  - pdf
+  - png
+  png_dpi: 300
+null_experiment:
+  datasets:
+  - IMDB_dir_genre
+  - stream_player
+  scholp_datasets:
+  - email_Enron
+  - congress_bills
+  sample_ids: []
+  scale_policy: fixed_size_statistic
+  models:
+  - size_preserving
+  - degree_size_preserving
+  samples_per_model: 100
+  chains: 4
+  burnin_sweeps: 20
+  thinning_attempt_sweeps: 5
+  include_enron_quarters: true
+  congress_min_unique_edges: 100
+  congress_initial_num_windows: 8
+  diagnose_mixing: true
+  diagnostic_budget_multipliers:
+  - 1
+  - 2
+  - 4
+  display_points: 80
+  main_test: normalized_entropy_logx_integral
+  integral_x_min: 0.01
+  integral_x_max: 10

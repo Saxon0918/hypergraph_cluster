@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hypergraph-cluster-expansion"
+version = "0.1.0"
+description = "Reproducible spectral thermodynamics experiments for non-uniform hypergraphs"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "Research use; dataset licenses remain with their providers"}
+authors = [{name = "Hypergraph Cluster Expansion Project"}]
+dependencies = [
+  "numpy>=1.23",
+  "scipy>=1.9",
+  "pandas>=1.5",
+  "scikit-learn>=1.2",
+  "networkx>=2.8",
+  "matplotlib>=3.6",
+  "PyYAML>=6.0",
+]
+
+[project.optional-dependencies]
+parquet = ["pyarrow>=10"]
+dev = ["pytest>=7", "pytest-cov>=4"]
+
+[project.scripts]
+hce = "hce.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+

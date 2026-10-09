@@ -1,0 +1,15 @@
+extends: base.yaml
+approximation:
+  datasets: [IMDB_dir_genre, stream_player]
+  scholp_datasets: [email_Enron, congress_bills]
+  x_grid: [0.01, 0.03, 0.1, 0.3, 1, 3]
+  forward_thresholds: [0.01, 0.05]
+  inverse_relative_thresholds: [0.05, 0.1]
+  dimensionless_degeneracy_tolerance: 1.0e-12
+  report_invalid_cases: true
+benchmark:
+  queries_J: [1, 12, 80]
+  warmups: 1
+  repetitions: 5
+  blas_threads: 1
+

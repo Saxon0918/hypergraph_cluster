@@ -1,0 +1,18 @@
+extends: base.yaml
+classification:
+  datasets: [IMDB_dir_genre, stream_player]
+  optional_datasets: [IMDB_dir_form]
+  methods: [B0, B1, B2, B3, B4, B5, B6, B7-edge, B7-vertex, B8, B9, U-only, S-only]
+  outer_folds: 5
+  inner_folds: 3
+  seeds: [11, 23, 37, 51, 71]
+  primary_split: stratified_isomorphism_group
+  primary_metric: f1_macro
+  classifier: linear_svm
+  C: [0.01, 0.1, 1, 10, 100]
+  class_weight: [null, balanced]
+  refit_scale_inside_inner_cv: true
+  # B8/B9 must use a pinned HIC author checkout in an isolated environment.
+  # See hce.baselines.external for the JSON adapter protocol.
+  external_baselines: {}
+

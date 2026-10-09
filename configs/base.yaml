@@ -1,0 +1,38 @@
+project: hypergraph_cluster_expansion
+dtype: float64
+seed: 11
+paths:
+  runs: runs
+preprocess:
+  binary_incidence: true
+  min_edge_size: 1
+  max_edge_size: null
+  deduplicate_within_edge: true
+  merge_duplicate_edges: true
+  preserve_declared_vertices: true
+  simplicial_closure: false
+spectrum:
+  side: auto
+  full_eigenvalues: true
+  preserve_zero_multiplicity: true
+  psd_relative_tolerance: 1.0e-10
+  memory_budget_gb: 8
+features:
+  x_log10_min: -2
+  x_log10_max: 1
+  num_scales: 12
+  scale_policy: train_median_lambda_max
+  include_U: true
+  include_normalized_entropy: true
+  include_free_energy: false
+sources:
+  hic: {}
+  scholp: {}
+  school: {}
+output:
+  save_predictions: true
+  save_raw_curves: true
+  table_formats: [csv, parquet]
+  figure_formats: [pdf, png]
+  png_dpi: 300
+

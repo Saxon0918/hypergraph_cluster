@@ -1,0 +1,38 @@
+[
+  {
+    "dataset": "IMDB_dir_genre",
+    "path": "/Users/saxon.zhu/Documents/ChatGPT/hypergraph/data/raw/hic/IMDB/IMDB_dir_genre.txt",
+    "sha256": "77d5d2fa029df384a73d5f36925a5d0b31f59755bdd69c5cccc345d269ff3619",
+    "graph_count": 3393,
+    "status": "available"
+  },
+  {
+    "dataset": "stream_player",
+    "path": "/Users/saxon.zhu/Documents/ChatGPT/hypergraph/data/raw/hic/STEAM/stream_player.txt",
+    "sha256": "3a8fa50d62ae5971b0e05f54e2256839f81e2547ab9eb88812942f05a62e4acb",
+    "graph_count": 2048,
+    "status": "available"
+  },
+  {
+    "dataset": "email_Enron",
+    "directory": "/Users/saxon.zhu/Documents/ChatGPT/hypergraph/data/raw/email-Enron-full",
+    "event_count": 10885,
+    "status": "available",
+    "simplices_path": "/Users/saxon.zhu/Documents/ChatGPT/hypergraph/data/raw/email-Enron-full/email-Enron-full-simplices.txt",
+    "nverts_path": "/Users/saxon.zhu/Documents/ChatGPT/hypergraph/data/raw/email-Enron-full/email-Enron-full-nverts.txt",
+    "times_path": "/Users/saxon.zhu/Documents/ChatGPT/hypergraph/data/raw/email-Enron-full/email-Enron-full-times.txt",
+    "time_min": 63046642020000,
+    "time_max": 63159582033000
+  },
+  {
+    "dataset": "congress_bills",
+    "directory": "/Users/saxon.zhu/Documents/ChatGPT/hypergraph/data/raw/congress-bills-full",
+    "event_count": 282049,
+    "status": "available",
+    "simplices_path": "/Users/saxon.zhu/Documents/ChatGPT/hypergraph/data/raw/congress-bills-full/congress-bills-full-simplices.txt",
+    "nverts_path": "/Users/saxon.zhu/Documents/ChatGPT/hypergraph/data/raw/congress-bills-full/congress-bills-full-nverts.txt",
+    "times_path": "/Users/saxon.zhu/Documents/ChatGPT/hypergraph/data/raw/congress-bills-full/congress-bills-full-times.txt",
+    "time_min": 719646,
+    "time_max": 731923
+  }
+]

@@ -1,0 +1,9 @@
+extends: local_e2.yaml
+
+classification:
+  methods: [B0, B1, B2, B3, B4, B5, B6]
+  outer_folds: 3
+  inner_folds: 2
+  seeds: [11]
+  C: [0.1, 1, 10]
+  class_weight: [null, balanced]
