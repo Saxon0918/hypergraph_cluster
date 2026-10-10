@@ -1,0 +1,14 @@
+{
+  "captured_at_utc": "2026-10-10T14:20:21.533982+00:00",
+  "python": "3.10.14 | packaged by conda-forge | (main, Mar 20 2024, 12:45:18) [GCC 12.3.0]",
+  "platform": "Linux-6.5.0-18-generic-x86_64-with-glibc2.35",
+  "machine": "x86_64",
+  "processor": "x86_64",
+  "numpy": "1.26.4",
+  "blas_threads": {
+    "OMP_NUM_THREADS": null,
+    "OPENBLAS_NUM_THREADS": null,
+    "MKL_NUM_THREADS": null
+  },
+  "git_commit": "f0173e18fc69d9db587a0279e7359df5375f38f9"
+}
