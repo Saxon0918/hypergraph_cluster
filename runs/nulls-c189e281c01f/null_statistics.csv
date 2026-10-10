@@ -1,0 +1,5 @@
+dataset,sample_id,model,statistic,real_value,null_mean,null_std,z,z_status,p_monte_carlo_two_sided,B,mixing_claim
+IMDB_dir_genre,IMDB_dir_genre:002042,N1,normalized_entropy_logx_integral,0.36031025325633914,0.4168631876110876,0.002377588559738037,-23.785837176546416,ok,0.18181818181818182,10,not_established_by_sampler_alone
+IMDB_dir_genre,IMDB_dir_genre:002042,N2,normalized_entropy_logx_integral,0.36031025325633914,0.3597343976660395,0.0024470372265678803,0.235327678732264,ok,0.9090909090909091,10,not_established_by_sampler_alone
+email_Enron,email_Enron:all_events,N1,normalized_entropy_logx_integral,0.2601648772378413,0.3507909478682003,0.0015342889251932566,-59.067147746597904,ok,0.18181818181818182,10,not_established_by_sampler_alone
+email_Enron,email_Enron:all_events,N2,normalized_entropy_logx_integral,0.2601648772378413,0.28334230535766497,0.0017467576871047993,-13.268828464833936,ok,0.18181818181818182,10,not_established_by_sampler_alone

@@ -1,0 +1,5 @@
+dataset,sample_id,n,n_active,M,small_side_dimension,benchmark_selected,selection_rule
+IMDB_dir_genre,IMDB_dir_genre:000000,11,11,9,9,True,dimension_spanning_even_indices_per_dataset
+IMDB_dir_genre,IMDB_dir_genre:000001,26,26,77,26,True,dimension_spanning_even_indices_per_dataset
+stream_player,stream_player:000000,12,12,45,12,True,dimension_spanning_even_indices_per_dataset
+stream_player,stream_player:000001,12,12,35,12,True,dimension_spanning_even_indices_per_dataset
