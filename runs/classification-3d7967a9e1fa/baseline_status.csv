@@ -1,0 +1,5 @@
+dataset,baseline,implementation,status,reason
+IMDB_dir_genre,B8,HIC-hypergraph-subtree,not_run,no frozen author-code checkout/adapter configured
+IMDB_dir_genre,B9,HIC-hypergraph-hyedge,not_run,no frozen author-code checkout/adapter configured
+stream_player,B8,HIC-hypergraph-subtree,not_run,no frozen author-code checkout/adapter configured
+stream_player,B9,HIC-hypergraph-hyedge,not_run,no frozen author-code checkout/adapter configured

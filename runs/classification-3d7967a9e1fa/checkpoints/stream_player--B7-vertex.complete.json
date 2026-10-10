@@ -1,0 +1,12 @@
+{
+  "checkpoint_version": 1,
+  "config_hash": "3d7967a9e1fa8c83e2cea1d4473715e8c046cca0c9342dde3e5b68831aa93165",
+  "source_sha256": "3a8fa50d62ae5971b0e05f54e2256839f81e2547ab9eb88812942f05a62e4acb",
+  "dataset": "stream_player",
+  "requested_method": "B7-vertex",
+  "method": "netlsd_vertex",
+  "elapsed_seconds": 27.920202448032796,
+  "prediction_rows": 10240,
+  "metric_rows": 25,
+  "status": "complete"
+}

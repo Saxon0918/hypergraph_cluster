@@ -1,0 +1,12 @@
+{
+  "checkpoint_version": 1,
+  "config_hash": "3d7967a9e1fa8c83e2cea1d4473715e8c046cca0c9342dde3e5b68831aa93165",
+  "source_sha256": "77d5d2fa029df384a73d5f36925a5d0b31f59755bdd69c5cccc345d269ff3619",
+  "dataset": "IMDB_dir_genre",
+  "requested_method": "B4",
+  "method": "size_thermo",
+  "elapsed_seconds": 44.97204809298273,
+  "prediction_rows": 16965,
+  "metric_rows": 25,
+  "status": "complete"
+}

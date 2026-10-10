@@ -1,0 +1,97 @@
+project: hypergraph_cluster_expansion
+dtype: float64
+seed: 11
+paths:
+  runs: runs
+preprocess:
+  binary_incidence: true
+  min_edge_size: 1
+  max_edge_size: null
+  deduplicate_within_edge: true
+  merge_duplicate_edges: true
+  preserve_declared_vertices: true
+  simplicial_closure: false
+spectrum:
+  side: auto
+  full_eigenvalues: true
+  preserve_zero_multiplicity: true
+  psd_relative_tolerance: 1.0e-10
+  memory_budget_gb: 8
+features:
+  x_log10_min: -2
+  x_log10_max: 1
+  num_scales: 12
+  scale_policy: train_median_lambda_max
+  include_U: true
+  include_normalized_entropy: true
+  include_free_energy: false
+sources:
+  hic:
+    IMDB_dir_genre:
+      path: data/raw/hic/IMDB/IMDB_dir_genre.txt
+      index_base: 0
+    stream_player:
+      path: data/raw/hic/STEAM/stream_player.txt
+      index_base: 0
+    IMDB_dir_form:
+      path: data/raw/hic/IMDB/IMDB_dir_form.txt
+      index_base: 0
+  scholp: {}
+  school: {}
+output:
+  save_predictions: true
+  save_raw_curves: true
+  table_formats:
+  - csv
+  - parquet
+  figure_formats:
+  - pdf
+  - png
+  png_dpi: 300
+classification:
+  datasets:
+  - IMDB_dir_genre
+  - stream_player
+  optional_datasets:
+  - IMDB_dir_form
+  methods:
+  - B0
+  - B1
+  - B2
+  - B3
+  - B4
+  - B5
+  - B6
+  - B7-edge
+  - B7-vertex
+  - B8
+  - B9
+  - U-only
+  - S-only
+  outer_folds: 5
+  inner_folds: 3
+  seeds:
+  - 11
+  - 23
+  - 37
+  - 51
+  - 71
+  primary_split: stratified_isomorphism_group
+  primary_metric: f1_macro
+  classifier: linear_svc
+  linear_svc_loss: squared_hinge
+  linear_svc_max_iter: 20000
+  linear_svc_tol: 0.0001
+  resume: true
+  progress_every_graphs: 250
+  C:
+  - 0.01
+  - 0.1
+  - 1
+  - 10
+  - 100
+  class_weight:
+  - null
+  - balanced
+  refit_scale_inside_inner_cv: true
+  external_baselines: {}
