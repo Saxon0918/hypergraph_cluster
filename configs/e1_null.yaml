@@ -18,4 +18,8 @@ null_experiment:
   main_test: normalized_entropy_logx_integral
   integral_x_min: 0.01
   integral_x_max: 10
+  parallel_workers: 4
+  parallel_batch_draws: 7
+  blas_threads: 1
+  resume: true
 

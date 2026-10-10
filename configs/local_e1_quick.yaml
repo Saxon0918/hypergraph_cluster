@@ -1,0 +1,16 @@
+extends: local_e1.yaml
+
+# Pipeline/pilot validation only.  B=10 and short chains are not paper results.
+null_experiment:
+  sample_ids:
+    - "IMDB_dir_genre:002042"
+    - "email_Enron:all_events"
+  samples_per_model: 10
+  chains: 2
+  burnin_sweeps: 5
+  thinning_attempt_sweeps: 1
+  display_points: 30
+  parallel_workers: 2
+  parallel_batch_draws: 2
+  blas_threads: 1
+  resume: true

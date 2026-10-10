@@ -31,7 +31,10 @@ class FixedMarginsChain:
         self.slot_vertices = np.asarray(
             [vertex for edge in self.edge_sets for vertex in sorted(edge)], dtype=np.int64
         )
-        self.fingerprints = {tuple(sorted(edge)) for edge in self.edge_sets}
+        # Frozenset fingerprints make proposed-column construction and exact
+        # duplicate checks O(size) without sorting on every attempted switch.
+        self.edge_keys = [frozenset(edge) for edge in self.edge_sets]
+        self.fingerprints = set(self.edge_keys)
         self.diag = NullDiagnostics(model="degree_size_preserving", attempts=0, accepted=0)
         self.initial_sizes = np.asarray([len(edge) for edge in self.edge_sets])
         self.initial_degrees = self._degrees()
@@ -43,12 +46,11 @@ class FixedMarginsChain:
     def incidence_count(self) -> int:
         return len(self.slot_vertices)
 
-    def attempt(self) -> bool:
+    def _attempt_indices(self, left: int, right: int) -> bool:
         self.diag.attempts += 1
         if self.incidence_count < 2:
             self.diag.rejected_same_row_or_column += 1
             return False
-        left, right = self.rng.choice(self.incidence_count, size=2, replace=False)
         v, u = int(self.slot_vertices[left]), int(self.slot_vertices[right])
         e, f = int(self.slot_edges[left]), int(self.slot_edges[right])
         if v == u or e == f:
@@ -57,19 +59,26 @@ class FixedMarginsChain:
         if u in self.edge_sets[e] or v in self.edge_sets[f]:
             self.diag.rejected_existing_incidence += 1
             return False
-        old_e = tuple(sorted(self.edge_sets[e]))
-        old_f = tuple(sorted(self.edge_sets[f]))
-        new_e_set = (self.edge_sets[e] - {v}) | {u}
-        new_f_set = (self.edge_sets[f] - {u}) | {v}
-        new_e = tuple(sorted(new_e_set))
-        new_f = tuple(sorted(new_f_set))
+        old_e = self.edge_keys[e]
+        old_f = self.edge_keys[f]
+        new_e = frozenset(u if value == v else value for value in old_e)
+        new_f = frozenset(v if value == u else value for value in old_f)
         if self.simple:
-            unaffected = self.fingerprints - {old_e, old_f}
-            if new_e == new_f or new_e in unaffected or new_f in unaffected:
+            duplicate_e = (
+                new_e in self.fingerprints and new_e != old_e and new_e != old_f
+            )
+            duplicate_f = (
+                new_f in self.fingerprints and new_f != old_e and new_f != old_f
+            )
+            if new_e == new_f or duplicate_e or duplicate_f:
                 self.diag.rejected_duplicate_edge += 1
                 return False
-        self.edge_sets[e] = new_e_set
-        self.edge_sets[f] = new_f_set
+        self.edge_sets[e].remove(v)
+        self.edge_sets[e].add(u)
+        self.edge_sets[f].remove(u)
+        self.edge_sets[f].add(v)
+        self.edge_keys[e] = new_e
+        self.edge_keys[f] = new_f
         self.slot_vertices[left], self.slot_vertices[right] = u, v
         if self.simple:
             self.fingerprints.discard(old_e)
@@ -79,12 +88,37 @@ class FixedMarginsChain:
         self.diag.accepted += 1
         return True
 
+    def attempt(self) -> bool:
+        if self.incidence_count < 2:
+            self.diag.attempts += 1
+            self.diag.rejected_same_row_or_column += 1
+            return False
+        left = int(self.rng.integers(self.incidence_count))
+        right_base = int(self.rng.integers(self.incidence_count - 1))
+        right = right_base + int(right_base >= left)
+        return self._attempt_indices(left, right)
+
     def advance(self, attempts: int) -> None:
-        for _ in range(int(attempts)):
-            self.attempt()
+        remaining = int(attempts)
+        if self.incidence_count < 2:
+            for _ in range(remaining):
+                self.attempt()
+            return
+        # Drawing many uniform ordered pairs at once removes hundreds of
+        # millions of tiny ``rng.choice`` allocations in full E1 runs.  Mapping
+        # [0, I-2] around ``left`` is exactly uniform over distinct ``right``.
+        batch_size = 16_384
+        while remaining:
+            count = min(batch_size, remaining)
+            left = self.rng.integers(self.incidence_count, size=count)
+            right = self.rng.integers(self.incidence_count - 1, size=count)
+            right += right >= left
+            for left_index, right_index in zip(left, right):
+                self._attempt_indices(int(left_index), int(right_index))
+            remaining -= count
 
     def snapshot(self, sample_index: int) -> HypergraphSample:
-        edges = tuple(tuple(sorted(edge)) for edge in self.edge_sets)
+        edges = tuple(tuple(sorted(edge)) for edge in self.edge_keys)
         sizes_ok = np.array_equal(
             np.asarray([len(edge) for edge in edges]), self.initial_sizes
         )

@@ -7,9 +7,15 @@ approximation:
   inverse_relative_thresholds: [0.05, 0.1]
   dimensionless_degeneracy_tolerance: 1.0e-12
   report_invalid_cases: true
+  parallel_workers: 2
+  progress_every_samples: 25
+  resume: true
 benchmark:
   queries_J: [1, 12, 80]
   warmups: 1
   repetitions: 5
   blas_threads: 1
+  samples_per_dataset: 40
+  max_exact_g_dimension: 2000
+  query_timing_loops: 50
 

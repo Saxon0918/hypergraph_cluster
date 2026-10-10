@@ -22,6 +22,9 @@ null_experiment:
   max_objects: 1
   samples_per_model: 4
   chains: 2
+  parallel_workers: 2
+  parallel_batch_draws: 1
+  blas_threads: 1
   burnin_sweeps: 2
   thinning_attempt_sweeps: 1
   display_points: 12

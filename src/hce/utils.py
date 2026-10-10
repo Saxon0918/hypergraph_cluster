@@ -72,6 +72,63 @@ def write_table(table: pd.DataFrame, path: str | Path) -> Path:
     return path
 
 
+def write_table_batches(tables: Iterable[pd.DataFrame], path: str | Path) -> Path | None:
+    """Atomically stream compatible DataFrame batches to CSV or Parquet.
+
+    E1 produces roughly a million curve rows under the formal configuration.
+    Streaming completed per-sample checkpoints avoids retaining their Python
+    dictionaries simultaneously while preserving the documented single-file
+    outputs.
+    """
+
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temp = path.with_name(f".{path.stem}.tmp-{os.getpid()}{path.suffix}")
+    wrote = False
+    if path.suffix == ".csv":
+        for table in tables:
+            if table.empty:
+                continue
+            table.to_csv(temp, mode="a" if wrote else "w", header=not wrote, index=False)
+            wrote = True
+    elif path.suffix == ".parquet":
+        try:
+            import pyarrow as pa
+            import pyarrow.parquet as pq
+        except ImportError as exc:
+            raise RuntimeError(
+                "Parquet output requires the optional 'parquet' dependency (pyarrow)"
+            ) from exc
+        writer = None
+        schema = None
+        try:
+            for table in tables:
+                if table.empty:
+                    continue
+                if schema is None:
+                    arrow_table = pa.Table.from_pandas(table, preserve_index=False)
+                    schema = arrow_table.schema
+                    writer = pq.ParquetWriter(temp, schema)
+                else:
+                    aligned = table.reindex(columns=schema.names)
+                    arrow_table = pa.Table.from_pandas(
+                        aligned, schema=schema, preserve_index=False, safe=False
+                    )
+                writer.write_table(arrow_table)
+                wrote = True
+        finally:
+            if writer is not None:
+                writer.close()
+    else:
+        raise ValueError(f"unsupported table suffix {path.suffix}")
+    if not wrote:
+        if temp.exists():
+            temp.unlink()
+        return None
+    os.replace(temp, path)
+    return path
+
+
 def append_jsonl(path: str | Path, payload: Mapping[str, Any]) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)

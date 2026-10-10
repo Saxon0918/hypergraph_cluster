@@ -6,6 +6,7 @@ from hce.core import (
     build_incidence,
     compute_cumulants,
     compute_spectrum,
+    compute_spectrum_and_moments,
     compute_walk_moments,
     evaluate_thermodynamics,
 )
@@ -32,6 +33,18 @@ def test_hand_computed_gold_standard():
         [cumulants.kappa1, cumulants.kappa2, cumulants.kappa3],
         [8 / 3, 38 / 9, 160 / 27], atol=1e-12,
     )
+
+
+def test_joint_operator_reuse_matches_separate_computations():
+    H = build_incidence(golden_sample())
+    separate_spectrum = compute_spectrum(H, compress_multiplicities=False)
+    separate_moments = compute_walk_moments(H)
+    joint_spectrum, joint_moments = compute_spectrum_and_moments(
+        H, compress_multiplicities=False
+    )
+    assert np.array_equal(joint_spectrum.values, separate_spectrum.values)
+    assert joint_spectrum.side == separate_spectrum.side
+    assert joint_moments == separate_moments
     spectrum = compute_spectrum(H, compress_multiplicities=False)
     expected = [1, (7 - np.sqrt(17)) / 2, (7 + np.sqrt(17)) / 2]
     assert np.allclose(spectrum.values, expected, atol=1e-12)

@@ -15,4 +15,8 @@ data/processed/**
 
 # Experiment runs are intentionally versioned so a server can push results and
 # another machine can pull them. Keep transient scratch data outside runs/.
+# E1/E3 checkpoints can contain thousands of duplicate intermediate records;
+# final CSV/Parquet outputs remain versioned, while local resume state does not.
+runs/**/checkpoints/e1/
+runs/**/checkpoints/e3/
 

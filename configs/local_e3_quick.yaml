@@ -1,0 +1,19 @@
+extends: local_e3.yaml
+
+# Pipeline/pilot validation only.  The formal E3 config analyzes every graph.
+approximation:
+  sample_ids:
+    - "IMDB_dir_genre:000000"
+    - "IMDB_dir_genre:000001"
+    - "stream_player:000000"
+    - "stream_player:000001"
+  parallel_workers: 2
+  progress_every_samples: 1
+  resume: true
+
+benchmark:
+  samples_per_dataset: 2
+  warmups: 0
+  repetitions: 1
+  query_timing_loops: 10
+  blas_threads: 1
