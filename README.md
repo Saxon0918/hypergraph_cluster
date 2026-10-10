@@ -17,6 +17,7 @@ S(\beta)=\log Z-\beta U,\qquad F(\beta)=-\log Z/\beta.
 - 数据：HIC 单标签文本、ScHoLP timestamped simplices、SocioPatterns 接触表、逐 20 秒图的全部极大团、确定性清洗和审计。
 - 零模型：保持大小的 N1；按固定尝试步数推进、同时保持顶点度和超边大小的二值 2×2 交换链 N2。
 - 分类：BasicStats、累积量、低阶分解、SizeOnlyThermo、GramThermo、组合特征、edge/vertex NetLSD；同构分组和无泄漏嵌套交叉验证。
+- E2 性能：NetLSD 与可复用谱曲线按图缓存；每个内层折的特征和标准化只计算一次并复用于全部超参数；使用 L2 `LinearSVC`（`squared_hinge`、`dual=auto`）；每完成一个数据集/方法即原子保存检查点，可中断后续跑。
 - 外部基线：HIC B8/B9、MoCHy、RethinkHGK 通过冻结 commit 的隔离环境 JSON 协议接入；未配置作者代码时输出 `not_run`，绝不填入论文公开分数。
 - 实验入口：数据审计、E1 零模型、E2 分类、E3 近似/反演/效率、E4 学校动态、从保存结果独立作图。
 - 输出：CSV/Parquet 长表、来源/划分/环境/完整配置、失败 JSONL，以及 PDF+PNG 图。
@@ -80,6 +81,8 @@ python -m hce.cli temporal --config configs/local_e4.yaml
 ```
 
 完成后在服务器提交 `runs/`，本机 `git pull` 即可取得机器可读结果和图。若将来单个结果文件超过托管平台限制（GitHub 为 100 MB），应为结果文件启用 Git LFS，而不是删减实验数据。
+
+E2 会持续输出图缓存、NetLSD 预计算和每个外层折的进度。结果目录中的 `checkpoints/` 在每个方法完成后写入；使用相同配置重新执行同一命令时，已经完成的方法会显示 `resumed checkpoint` 并跳过。`classification_runtime.csv` 保存各阶段实际耗时。
 
 直接 URL 可用清单下载器；Google Drive 若返回确认 HTML 会被拒绝：
 

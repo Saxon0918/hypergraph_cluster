@@ -30,3 +30,23 @@ def test_scale_records_only_training_ids_and_features_are_finite():
         assert feature.ndim == 1
         assert np.all(np.isfinite(feature))
 
+
+def test_expensive_scale_independent_features_are_memoized():
+    sample = HypergraphSample(
+        "cache", "test", 5,
+        ((0, 1, 2), (1, 2, 3), (0, 3, 4)), graph_label=0,
+    )
+    cache = build_graph_cache(sample)
+    scale = ScaleModel().fit([cache])
+    first = make_features(cache, scale, "netlsd_edge")
+    cache_size = len(cache.feature_cache)
+    second = make_features(cache, scale, "netlsd_edge")
+    assert first is second
+    assert len(cache.feature_cache) == cache_size
+
+    gram = make_features(cache, scale, "gram_thermo")
+    cache_size = len(cache.feature_cache)
+    assert np.allclose(make_features(cache, scale, "gram_U"), gram[:12])
+    assert np.allclose(make_features(cache, scale, "gram_S"), gram[12:])
+    assert len(cache.feature_cache) == cache_size
+

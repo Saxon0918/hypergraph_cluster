@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Iterable, Mapping, Sequence
 
 import numpy as np
@@ -26,6 +26,10 @@ class GraphCache:
     moments: MomentResult
     cumulants: CumulantResult
     statistics: dict
+    # Expensive, scale-independent feature families (and reusable exact
+    # thermodynamic curves) are memoized here.  The cache is per graph and is
+    # never serialized into scientific outputs.
+    feature_cache: dict[tuple, np.ndarray] = field(default_factory=dict, repr=False)
 
 
 @dataclass
@@ -62,6 +66,10 @@ def build_graph_cache(sample: HypergraphSample, **spectrum_kwargs) -> GraphCache
 
 
 def basic_statistics_features(cache: GraphCache) -> np.ndarray:
+    key = ("basic_statistics",)
+    cached = cache.feature_cache.get(key)
+    if cached is not None:
+        return cached
     row = cache.statistics
     n = max(1, int(row["n_declared"]))
     M = max(1, int(row["M"]))
@@ -78,7 +86,9 @@ def basic_statistics_features(cache: GraphCache) -> np.ndarray:
     fields.extend(row[name] for name in (
         "fraction_size1", "fraction_size2", "fraction_size_gt2"
     ))
-    return np.nan_to_num(np.asarray(fields, dtype=np.float64), nan=0.0)
+    result = np.nan_to_num(np.asarray(fields, dtype=np.float64), nan=0.0)
+    cache.feature_cache[key] = result
+    return result
 
 
 def _cumulant_features(cache: GraphCache, c: float) -> np.ndarray:
@@ -107,7 +117,8 @@ def _thermo_features(
     size_only: bool = False,
 ) -> np.ndarray:
     c = float(scale.c_D)
-    betas = scale.beta_grid(x_grid)
+    grid = np.asarray(x_grid, dtype=np.float64)
+    betas = scale.beta_grid(grid)
     spectrum = cache.spectrum
     if size_only:
         sizes = np.asarray([len(edge) for edge in cache.sample.hyperedges], dtype=float)
@@ -122,12 +133,28 @@ def _thermo_features(
             raw_min_eigenvalue=float(np.min(sizes)),
             operator_dimension=len(sizes),
         )
-    curve = evaluate_thermodynamics(spectrum, betas)
+        curve = evaluate_thermodynamics(spectrum, betas)
+        full = np.concatenate([curve.U_struct / c, curve.normalized_entropy])
+    else:
+        # B5, B6, U-only and S-only use the same exact curve for a given
+        # training-fold scale.  Persist it once so later ablations do not
+        # repeat identical thermodynamic evaluations.
+        key = (
+            "gram_thermo",
+            float(c).hex(),
+            tuple(float(value).hex() for value in grid),
+        )
+        full = cache.feature_cache.get(key)
+        if full is None:
+            curve = evaluate_thermodynamics(spectrum, betas)
+            full = np.concatenate([curve.U_struct / c, curve.normalized_entropy])
+            cache.feature_cache[key] = full
+    width = len(grid)
     blocks = []
     if include_U:
-        blocks.append(curve.U_struct / c)
+        blocks.append(full[:width])
     if include_entropy:
-        blocks.append(curve.normalized_entropy)
+        blocks.append(full[width:])
     if not blocks:
         raise ValueError("thermodynamic feature set is empty")
     return np.concatenate(blocks)
@@ -139,8 +166,17 @@ def netlsd_features(
     perspective: str = "edge",
 ) -> np.ndarray:
     """Normalized heat trace of a weighted projection's normalized Laplacian."""
-    from scipy import sparse
     from scipy.linalg import eigvalsh
+
+    grid = np.logspace(-2, 2, 250) if times is None else np.asarray(times)
+    key = (
+        "netlsd",
+        perspective,
+        tuple(float(value).hex() for value in np.asarray(grid, dtype=np.float64)),
+    )
+    cached = cache.feature_cache.get(key)
+    if cached is not None:
+        return cached
 
     H = build_incidence(cache.sample)
     if perspective == "edge":
@@ -160,8 +196,9 @@ def netlsd_features(
     laplacian[~positive, :] = 0.0
     laplacian[:, ~positive] = 0.0
     eigenvalues = eigvalsh((laplacian + laplacian.T) * 0.5)
-    grid = np.logspace(-2, 2, 250) if times is None else np.asarray(times)
-    return np.mean(np.exp(-np.outer(grid, eigenvalues)), axis=1)
+    result = np.mean(np.exp(-np.outer(grid, eigenvalues)), axis=1)
+    cache.feature_cache[key] = result
+    return result
 
 
 def make_features(

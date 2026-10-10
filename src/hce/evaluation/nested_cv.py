@@ -3,16 +3,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Iterable, Sequence
+from typing import Any, Callable, Sequence
 
 import numpy as np
 import pandas as pd
 from sklearn.dummy import DummyClassifier
 from sklearn.metrics import accuracy_score, balanced_accuracy_score, f1_score
 from sklearn.model_selection import StratifiedGroupKFold, StratifiedKFold
-from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
+from sklearn.svm import LinearSVC
 
 from hce.features import GraphCache, ScaleModel, make_features
 
@@ -25,6 +24,9 @@ class NestedCVConfig:
     C_values: tuple[float, ...] = (0.01, 0.1, 1.0, 10.0, 100.0)
     class_weights: tuple[Any, ...] = (None, "balanced")
     primary_metric: str = "f1_macro"
+    linear_svc_max_iter: int = 20_000
+    linear_svc_tol: float = 1e-4
+    linear_svc_loss: str = "squared_hinge"
 
 
 def _splitter(y: np.ndarray, groups: np.ndarray | None, folds: int, seed: int):
@@ -51,11 +53,19 @@ def _matrix(
     return np.vstack([make_features(caches[idx], scale, method, x_grid) for idx in indices])
 
 
-def _model(C: float, class_weight):
-    return Pipeline([
-        ("scale", StandardScaler()),
-        ("svm", SVC(kernel="linear", C=C, class_weight=class_weight)),
-    ])
+def _model(C: float, class_weight, config: NestedCVConfig, seed: int) -> LinearSVC:
+    # For thousands of samples with at most a few hundred features, liblinear's
+    # primal/automatic route is substantially faster than SVC(kernel="linear")
+    # while fitting the same linear maximum-margin model family.
+    return LinearSVC(
+        C=C,
+        class_weight=class_weight,
+        dual="auto",
+        loss=config.linear_svc_loss,
+        max_iter=int(config.linear_svc_max_iter),
+        tol=float(config.linear_svc_tol),
+        random_state=int(seed),
+    )
 
 
 def _metrics(y_true, y_pred) -> dict:
@@ -72,6 +82,7 @@ def run_nested_cv(
     config: NestedCVConfig = NestedCVConfig(),
     groups: Sequence[str] | None = None,
     x_grid: Sequence[float] | None = None,
+    progress: Callable[[dict], None] | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, list[dict]]:
     """Return per-sample predictions, fold metrics, and split manifests.
 
@@ -94,12 +105,19 @@ def run_nested_cv(
     for repeat, seed in enumerate(config.seeds):
         outer_iter, actual_outer_folds = _splitter(y, group_array, config.outer_folds, seed)
         for outer_fold, (outer_train, outer_test) in enumerate(outer_iter):
-            best = None
             candidates = [(1.0, None)] if method == "dummy" else [
                 (float(C), weight) for C in config.C_values for weight in config.class_weights
             ]
-            for C, class_weight in candidates:
-                scores = []
+            if progress is not None:
+                progress({
+                    "event": "outer_start", "method": method,
+                    "repeat": repeat, "repeats": len(config.seeds),
+                    "outer_fold": outer_fold, "outer_folds": actual_outer_folds,
+                })
+
+            candidate_scores = {candidate: [] for candidate in candidates}
+            actual_inner_folds = 0
+            if method == "dummy":
                 inner_groups = None if group_array is None else group_array[outer_train]
                 inner_iter, actual_inner_folds = _splitter(
                     y[outer_train], inner_groups, config.inner_folds, seed + outer_fold + 1
@@ -107,44 +125,94 @@ def run_nested_cv(
                 for inner_train_local, inner_valid_local in inner_iter:
                     inner_train = outer_train[inner_train_local]
                     inner_valid = outer_train[inner_valid_local]
-                    if method == "dummy":
-                        model = DummyClassifier(strategy="most_frequent")
-                        X_train = np.zeros((len(inner_train), 1))
-                        X_valid = np.zeros((len(inner_valid), 1))
-                    else:
-                        scale = ScaleModel().fit([caches[idx] for idx in inner_train])
-                        X_train = _matrix(caches, inner_train, scale, method, grid)
-                        X_valid = _matrix(caches, inner_valid, scale, method, grid)
-                        model = _model(C, class_weight)
-                    model.fit(X_train, y[inner_train])
-                    pred = model.predict(X_valid)
-                    scores.append(f1_score(y[inner_valid], pred, average="macro", zero_division=0))
+                    model = DummyClassifier(strategy="most_frequent")
+                    model.fit(np.zeros((len(inner_train), 1)), y[inner_train])
+                    pred = model.predict(np.zeros((len(inner_valid), 1)))
+                    candidate_scores[(1.0, None)].append(
+                        f1_score(y[inner_valid], pred, average="macro", zero_division=0)
+                    )
+            else:
+                # Feature extraction and standardization depend on the fold but
+                # not on C/class_weight.  Compute them once per inner split and
+                # reuse them for every hyperparameter candidate.
+                inner_groups = None if group_array is None else group_array[outer_train]
+                inner_iter, actual_inner_folds = _splitter(
+                    y[outer_train], inner_groups, config.inner_folds, seed + outer_fold + 1
+                )
+                for inner_fold, (inner_train_local, inner_valid_local) in enumerate(inner_iter):
+                    inner_train = outer_train[inner_train_local]
+                    inner_valid = outer_train[inner_valid_local]
+                    scale = ScaleModel().fit([caches[idx] for idx in inner_train])
+                    X_train = _matrix(caches, inner_train, scale, method, grid)
+                    X_valid = _matrix(caches, inner_valid, scale, method, grid)
+                    scaler = StandardScaler().fit(X_train)
+                    X_train = scaler.transform(X_train)
+                    X_valid = scaler.transform(X_valid)
+                    for C, class_weight in candidates:
+                        model = _model(
+                            C, class_weight, config,
+                            seed + 10_000 * outer_fold + inner_fold,
+                        )
+                        model.fit(X_train, y[inner_train])
+                        pred = model.predict(X_valid)
+                        candidate_scores[(C, class_weight)].append(
+                            f1_score(
+                                y[inner_valid], pred, average="macro", zero_division=0
+                            )
+                        )
+
+            best = None
+            for C, class_weight in candidates:
+                scores = candidate_scores[(C, class_weight)]
                 candidate = (float(np.mean(scores)), -C, class_weight is None, C, class_weight)
-                # score high, then lower C (via -C high), then None class weight.
+                # Score high, then lower C (via -C high), then None class weight.
                 if best is None or candidate[:3] > best[:3]:
                     best = candidate
             assert best is not None
             _, _, _, best_C, best_weight = best
+
             if method == "dummy":
                 final_scale = None
                 model = DummyClassifier(strategy="most_frequent")
                 X_train = np.zeros((len(outer_train), 1))
                 X_test = np.zeros((len(outer_test), 1))
                 fit_hash = None
+                model.fit(X_train, y[outer_train])
+                fit_iterations = None
             else:
                 final_scale = ScaleModel().fit([caches[idx] for idx in outer_train])
                 X_train = _matrix(caches, outer_train, final_scale, method, grid)
                 X_test = _matrix(caches, outer_test, final_scale, method, grid)
-                model = _model(best_C, best_weight)
+                scaler = StandardScaler().fit(X_train)
+                X_train = scaler.transform(X_train)
+                X_test = scaler.transform(X_test)
+                model = _model(
+                    best_C, best_weight, config, seed + 100_000 + outer_fold
+                )
                 fit_hash = final_scale.fit_sample_ids_hash
-            model.fit(X_train, y[outer_train])
+                model.fit(X_train, y[outer_train])
+                fit_iterations = int(model.n_iter_)
             predicted = model.predict(X_test)
             metrics = _metrics(y[outer_test], predicted)
+            if progress is not None:
+                progress({
+                    "event": "outer_complete", "method": method,
+                    "repeat": repeat, "repeats": len(config.seeds),
+                    "outer_fold": outer_fold, "outer_folds": actual_outer_folds,
+                    "best_C": best_C, "best_class_weight": best_weight,
+                    **metrics,
+                })
             metric_rows.append({
                 "method": method, "repeat": repeat, "seed": seed,
                 "outer_fold": outer_fold, "outer_folds_actual": actual_outer_folds,
+                "inner_folds_actual": actual_inner_folds,
                 "best_C": best_C, "best_class_weight": best_weight,
-                "scale_fit_sample_ids_hash": fit_hash, **metrics,
+                "scale_fit_sample_ids_hash": fit_hash,
+                "estimator": "dummy" if method == "dummy" else "LinearSVC",
+                "estimator_loss": None if method == "dummy" else config.linear_svc_loss,
+                "estimator_dual": None if method == "dummy" else "auto",
+                "fit_iterations": fit_iterations,
+                **metrics,
             })
             for idx, prediction in zip(outer_test, predicted):
                 prediction_rows.append({

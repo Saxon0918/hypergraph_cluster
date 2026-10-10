@@ -8,6 +8,11 @@ and beta=0.1 thermodynamic values to float64 tolerance. G/Q equivalence,
 monotonicity, exact inversion, loaders, N1/N2 invariants, simultaneous school
 cliques, structural grouping, local feature extraction, nested CV, E1, E3, E4,
 Parquet output and PDF/PNG reporting were exercised with synthetic fixtures.
+The optimized E2 pipeline was also exercised end-to-end on both configured HIC
+datasets with the quick protocol: fold-level feature reuse, lazy NetLSD caches,
+LinearSVC, progress output, runtime accounting, and method checkpoints all
+completed.  This remains a pipeline/performance validation, not the formal E2
+result; the full five-seed nested protocol must still be run on the server.
 
 ## Requires official data or external code before scientific reporting
 

@@ -6,6 +6,7 @@ from .extractors import (
     basic_statistics_features,
     build_graph_cache,
     make_features,
+    netlsd_features,
 )
 
 __all__ = [
@@ -14,5 +15,6 @@ __all__ = [
     "basic_statistics_features",
     "build_graph_cache",
     "make_features",
+    "netlsd_features",
 ]
 
