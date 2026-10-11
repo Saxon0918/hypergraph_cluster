@@ -242,7 +242,9 @@ def _draw_e1_dataset_pair(
     if dataset == "congress_bills":
         point_axis.set_ylim(-1e4, -1e1)
     point_axis.set_xticks([0, 1], ["N1", "N2"])
-    point_axis.set_ylabel(r"$z$")
+    point_axis.set_ylabel(
+        r"$z=(T_S^{\mathrm{obs}}-\mu_{\mathrm{null}})/\sigma_{\mathrm{null}}$"
+    )
 
     n2_stats = dataset_stats[(dataset_stats.model == "N2") & dataset_stats.z.notna()]
     target = n2_stats.z.median()
@@ -272,12 +274,12 @@ def _draw_e1_dataset_pair(
     real = source[source.model == "real"].sort_values("x")
     curve_axis.plot(real.x, real.S_norm, color=COLORS["real"], linewidth=2.5)
     curve_axis.set_xscale("log")
-    curve_axis.set_xlabel(r"$x$")
+    curve_axis.set_xlabel(r"$x=\beta c$")
     curve_axis.set_ylabel(r"$S/\log M$")
     for axis in (point_axis, curve_axis):
-        axis.tick_params(axis="both", labelsize=8)
-        axis.xaxis.label.set_size(8)
-        axis.yaxis.label.set_size(8)
+        axis.tick_params(axis="both", labelsize=10)
+        axis.xaxis.label.set_size(10)
+        axis.yaxis.label.set_size(10)
 
 
 def _e1_legend_handles() -> list[Line2D]:
